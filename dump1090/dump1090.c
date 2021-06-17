@@ -914,13 +914,15 @@ void aircraft_counter(void){
 
     struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
     bool first_time = true; //first loop?
+    int previous_altitude;
     //loop through the aircraft linked list
+
     while(1){
         
         if(!first_time){
             previous_altitude = current_aircraft->prev_altitude;
         }else{
-            int previous_altitude = -1;
+         previous_altitude = -1;
         }
       
 
@@ -949,6 +951,8 @@ void aircraft_counter(void){
                 if(current_altitude > previous_altitude){
 
                     //count as a take-off!
+                    //status = "in-air"
+                    //take0ff_count++;
 
                 //landing?
                 }else if(current_altitude < previous_altitude){

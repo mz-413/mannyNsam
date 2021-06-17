@@ -206,7 +206,10 @@ struct aircraft {
     char          flight[16];     // Flight number
     unsigned char signalLevel[8]; // Last 8 Signal Amplitudes
     int           altitude;       // Altitude in feet
+
+    char          status;         // in the air = a or on the ground =g
     int           prev_altitude;  // previous altitude in past 5 seconds
+    
     int           speed;          // Velocity
     int           track;          // Angle of flight
     int           vert_rate;      // Vertical rate.
