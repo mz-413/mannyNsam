@@ -57,6 +57,7 @@
     #include <ctype.h>
     #include <sys/stat.h>
     #include <sys/ioctl.h>
+    #include <stdbool.h>
     #include "rtl-sdr.h"
     #include "anet.h"
 #else
@@ -204,7 +205,8 @@ struct aircraft {
     uint32_t      addr;           // ICAO address
     char          flight[16];     // Flight number
     unsigned char signalLevel[8]; // Last 8 Signal Amplitudes
-    int           altitude;       // Altitude
+    int           altitude;       // Altitude in feet
+    int           prev_altitude;  // previous altitude in past 5 seconds
     int           speed;          // Velocity
     int           track;          // Angle of flight
     int           vert_rate;      // Vertical rate.
@@ -329,7 +331,7 @@ struct {                             // Internal state
     int    bUserFlags;              // Flags relating to the user details
 
     // Interactive mode
-    struct aircraft *aircrafts; //head of the linked list
+    struct aircraft *aircrafts;     //head of the linked list
     uint64_t         interactive_last_update; // Last screen update in milliseconds
     time_t           last_cleanup_time;       // Last cleanup time in seconds
 

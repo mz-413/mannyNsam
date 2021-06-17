@@ -904,13 +904,26 @@ int main(int argc, char **argv) {
 //Functions define by us are below
 
 
+/*Description: Count take-offs, landings, and overflights and then save to text file.
+ *Parameters: 
+ *Output: write to a text file name.........
+ *Returns: none
+ *note: none
+ */
 void aircraft_counter(void){
 
     struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
-    
+    bool first_time = true; //first loop?
     //loop through the aircraft linked list
     while(1){
-        int previous_altitude = 0;
+        
+        if(!first_time){
+            previous_altitude = current_aircraft->prev_altitude;
+        }else{
+            int previous_altitude = -1;
+        }
+      
+
 //        struct LinkedList_taking_off_aircraft{ int data;
 //                                    struct LinkedList_taking_off_aircraft *next; };
 //
@@ -922,18 +935,26 @@ void aircraft_counter(void){
 
         // checking each aircraft in linked list
         while(current_aircraft != NULL){
-            int current_altitude = current_aircraft->altitude;
+            double current_altitude = current_aircraft->altitude;
+            double current_latitude = current_aircraft->lat;
+            double current_longitude = current_aircraft->lon;
+            double distance = lat_lon_distance(current_latitude,current_longitude);
+        
 
-            //Perform checks
-            //Take off? 
-            if(current_altitude>=AUBURN_ALTITUDE - 50 && current_altitude<=AUBURN_ALTITUDE + 50) {
+            //Perform checks:
+            //Take-off or Landing?
+            if((current_altitude>=AUBURN_ALTITUDE - 50) && (current_altitude<=AUBURN_ALTITUDE + 50) && (distance <= 2)){
                 
                 //taking off?
-                if(current_altitude>previous_altitude){
-                    // previous_altitude = altitude;
-                //landing?
-                }else if(){
+                if(current_altitude > previous_altitude){
 
+                    //count as a take-off!
+
+                //landing?
+                }else if(current_altitude < previous_altitude){
+                
+                    //count as a landing
+                
                 //neither
                 }else{
 
@@ -947,10 +968,14 @@ void aircraft_counter(void){
             // incrementing next node in the linked list
             current_aircraft = current_aircraft->next;
         }
+        
         current_aircraft = Modes.aircrafts; //reset to head of list
-
-
+        sleep(5);
+    first_time =false;
     }
+
+
+
 }
 
 /*Description: returns the distance from auburn airport
