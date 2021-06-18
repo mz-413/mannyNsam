@@ -236,6 +236,7 @@ struct aircraft {
     struct aircraft *next;        // Next aircraft in our linked list
 };
 
+// st? Data Frames
 struct stDF {
     struct stDF     *pNext;                      // Pointer to next item in the linked list
     struct stDF     *pPrev;                      // Pointer to previous item in the linked list
@@ -461,9 +462,18 @@ void  interactiveRemoveStaleAircrafts(void);
 int   decodeBinMessage   (struct client *c, char *p);
 struct aircraft *interactiveFindAircraft(uint32_t addr);
 struct stDF     *interactiveFindDF      (uint32_t addr);
+
+//Our function declarations
+/////////////////////////////////////////////////////////////////////////////////////////
 void aircraft_counter(void);
 double lat_lon_distance(double lat, double lon);
+void overflight_hlpr(void); 
 
+
+//in C/C++ void parameter means no parameters, somefunction() means no parameters in C++ and any number of 
+//parameters in C!
+//https://stackoverflow.com/questions/693788/is-it-better-to-use-c-void-arguments-void-foovoid-or-not-void-foo
+/////////////////////////////////////////////////////////////////////////////////////////
 //
 // Functions exported from net_io.c
 //

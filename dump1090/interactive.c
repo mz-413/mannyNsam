@@ -408,6 +408,39 @@ struct aircraft *interactiveReceiveData(struct modesMessage *mm) {
 //
 // Show the currently captured interactive data on screen.
 //
+
+
+
+
+//Our functions
+//////////////////////////////////////////////////////////////////////////////
+void test_func(void){
+    
+    printf("Hello there\n");
+    //sleep(5);
+
+}
+//////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void interactiveShowData(void) {
     struct aircraft *a = Modes.aircrafts;
     time_t now = time(NULL);
@@ -522,6 +555,7 @@ void interactiveShowData(void) {
             }
         }
         a = a->next;
+        test_func();
     }
 }
 //
@@ -531,9 +565,9 @@ void interactiveShowData(void) {
 // MODES_INTERACTIVE_DELETE_TTL seconds we remove the aircraft from the list.
 //
 void interactiveRemoveStaleAircrafts(void) {
-    struct aircraft *a = Modes.aircrafts;
-    struct aircraft *prev = NULL;
-    time_t now = time(NULL);
+    struct aircraft *a = Modes.aircrafts;   //pointer to the head of the aircrafts linked list
+    struct aircraft *prev = NULL;           //null ptr to an aircraft
+    time_t now = time(NULL);                //basically get current i.e now = curent time
 
     // Only do cleanup once per second
     if (Modes.last_cleanup_time != now) {
@@ -542,7 +576,7 @@ void interactiveRemoveStaleAircrafts(void) {
         interactiveRemoveStaleDF(now);
 
         while(a) {
-            if ((now - a->seen) > Modes.interactive_delete_ttl) {
+            if ((now - a->seen) > Modes.interactive_delete_ttl) {  //if x amount of time passed is more than some y amnt of time then....
                 // Remove the element from the linked list, with care
                 // if we are removing the first element
                 if (!prev) {
@@ -550,11 +584,14 @@ void interactiveRemoveStaleAircrafts(void) {
                 } else {
                     prev->next = a->next; free(a); a = prev->next;
                 }
+
+                //overflight_hlpr(); //if we remove an aircraft then it must be an overflight??
             } else {
                 prev = a; a = a->next;
             }
         }
     }
+
 }
 //
 //=========================================================================

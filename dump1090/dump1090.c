@@ -908,7 +908,7 @@ int main(int argc, char **argv) {
  *Parameters: 
  *Output: write to a text file name.........
  *Returns: none
- *note: none
+ *note:  "ground" is consider 767ft +/- 100ft
  */
 void aircraft_counter(void){
 
@@ -943,9 +943,8 @@ void aircraft_counter(void){
             double distance = lat_lon_distance(current_latitude,current_longitude);
         
 
-            //Perform checks:
-            //Take-off or Landing?
-            if((current_altitude>=AUBURN_ALTITUDE - 50) && (current_altitude<=AUBURN_ALTITUDE + 50) && (distance <= 2)){
+            //PERFORM CHECK: Take-off or landing?
+            if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 2)){
                 
                 //taking off?
                 if(current_altitude > previous_altitude){
@@ -961,12 +960,16 @@ void aircraft_counter(void){
                 
                 //neither
                 }else{
-
+                    printf("Error! this should not be happening!\n");
                 }
     
-    
+            //PERFORM CHECK: Overflight?
+            }else{
+                //should never happened
+                printf("it happened!!\n");    
+
             }
-      
+            
        
 
             // incrementing next node in the linked list
@@ -975,7 +978,7 @@ void aircraft_counter(void){
         
         current_aircraft = Modes.aircrafts; //reset to head of list
         sleep(5);
-    first_time =false;
+        first_time =false;
     }
 
 
@@ -1010,3 +1013,9 @@ double lat_lon_distance(double lat, double lon)
     return rad * c;
 
 }
+
+void overflight_hlpr(void){
+
+    //overfilght occured write to file
+}
+
