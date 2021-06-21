@@ -354,6 +354,10 @@ struct {                             // Internal state
     unsigned int stat_badcrc;
     unsigned int stat_fixed;
 
+    unsigned int num_takeoffs;
+    unsigned int num_landings;
+    unsigned int num_overflights;
+
     // Histogram of fixed bit errors: index 0 for single bit erros,
     // index 1 for double bit errors etc.
     unsigned int stat_bit_fix[MODES_MAX_BITERRORS];

@@ -832,6 +832,10 @@ int main(int argc, char **argv) {
     pthread_create(&Modes.reader_thread, NULL, readerThreadEntryPoint, NULL);
     pthread_mutex_lock(&Modes.data_mutex);
 
+
+    //likely place to create the pthread for counter function.
+    //pthread_create();
+
     while (Modes.exit == 0) {
 
         if (Modes.iDataReady == 0) {
@@ -950,13 +954,17 @@ void aircraft_counter(void){
                 if(current_altitude > previous_altitude){
 
                     //count as a take-off!
-                    //status = "in-air"
-                    //take0ff_count++;
+                    current_aircraft->status = 'a'; // it's in the air now
+                    Modes.num_takeoffs++;
+
 
                 //landing?
                 }else if(current_altitude < previous_altitude){
                 
                     //count as a landing
+                    current_aircraft->status = 'g';
+                    Modes.num_landings;
+                    
                 
                 //neither
                 }else{
