@@ -674,22 +674,27 @@ int verbose_device_search(char *s)
  */
 void *aircraft_counter(void* arg){
 
-    /*
+    
     struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
     bool first_time = true; //first loop?
     int previous_altitude;
-    
-    loop through the aircraft linked list
+
+    //loop through the aircraft linked list
     while(1){
         
         //check if this is the first loop ever
-        if(!first_time){
-            previous_altitude = current_aircraft->prev_altitude;
+        if(!first_time && current_aircraft != NULL){
+            printf("before\n");
+            previous_altitude = current_aircraft->prev_altitude; //was seg faulting here! when aircrafts linked list was empty.
+            printf("after\n");
         }else{
          previous_altitude = -1;
         }
-      
-
+        
+        printf("previous_altitude == %d\n", previous_altitude);
+        printf("current_aircraft == %d\n", (int)current_aircraft);
+        sleep(1);
+        
 //        struct LinkedList_taking_off_aircraft{ int data;
 //                                    struct LinkedList_taking_off_aircraft *next; };
 //
@@ -698,9 +703,12 @@ void *aircraft_counter(void* arg){
 //
 //        struct LinkedList_overflight_aircraft{ int data;
 //                                                 struct LinkedList_overflight_aircraft *next; };
-
+        
         // checking each aircraft in linked list
-        while(current_aircraft != NULL){
+        while(current_aircraft != NULL){ ///while current_aircraft does NOT point to NULL
+            printf("2nd while loop\n");
+            sleep(1);
+            /*
             double current_altitude = current_aircraft->altitude;
             double current_latitude = current_aircraft->lat;
             double current_longitude = current_aircraft->lon;
@@ -742,21 +750,24 @@ void *aircraft_counter(void* arg){
 
             // incrementing next node in the linked list
             current_aircraft = current_aircraft->next;
+            */
         }
-        
-        current_aircraft = Modes.aircrafts; //reset to head of list
-        sleep(5);
+        printf("yolo\n");
+        //current_aircraft = Modes.aircrafts; //reset to head of list
+        //sleep(5);
         first_time =false;
+        
     }
 
-    */
+    
 
-
+   /*
     while(1){
         printf("im with smarty pants ->\n");
         sleep(1);
 
     }
+    */
 }
 
 /*Description: returns the distance from auburn airport
