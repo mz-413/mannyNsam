@@ -659,14 +659,32 @@ int verbose_device_search(char *s)
 }
 
 
-
-
 //
 //=========================================================================
 //Functions define by us are below
 
+/*Description: write the number of current take-offs, landings, and overflights to a txt file
+ *Parameters: none
+ *Output: write to a text file
+ *Returns: none
+ *note: used only in aircraftcounter function
+ */
+void writeToFile(void){
 
-/*Description: Count take-offs, landings, and overflights and then save to text file.
+    ////write ever 5sconds
+    FILE *fp;
+    fp = fopen("current_count.txt", "w");
+    fprintf(fp,"%s %d %s %d %s %d","CURRENT COUNT \nType\t\t\tAmount\n-------------------------------------\nTake-offs:\t\t",Modes.num_takeoffs,"\nLandings:\t\t", Modes.num_landings,
+    "\nOverflights:\t",Modes.num_overflights);
+    fclose(fp);
+
+    //write weekly
+
+    //write monthly 
+
+}
+
+/*Description: Count take-offs, landings and then save to text file.
  *Parameters: 
  *Output: write to a text file name.........
  *Returns: none
@@ -677,44 +695,36 @@ void *aircraft_counter(void* arg){
     
     struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
     bool first_time = true; //first loop?
-    int previous_altitude;
+    int previous_altitude=0;
 
     //loop through the aircraft linked list
     while(1){
-        
-        //check if this is the first loop ever
-        if(!first_time && current_aircraft != NULL){
-            printf("before\n");
-            previous_altitude = current_aircraft->prev_altitude; //was seg faulting here! when aircrafts linked list was empty.
-            printf("after\n");
-        }else{
-         previous_altitude = -1;
-        }
-        
+                
         printf("previous_altitude == %d\n", previous_altitude);
         printf("current_aircraft == %d\n", (int)current_aircraft);
         sleep(1);
-        
-//        struct LinkedList_taking_off_aircraft{ int data;
-//                                    struct LinkedList_taking_off_aircraft *next; };
-//
-//        struct LinkedList_landing_aircraft{ int data;
-//                                            struct LinkedList_landing_aircraft *next; };
-//
-//        struct LinkedList_overflight_aircraft{ int data;
-//                                                 struct LinkedList_overflight_aircraft *next; };
-        
+
         // checking each aircraft in linked list
-        while(current_aircraft != NULL){ ///while current_aircraft does NOT point to NULL
+        while(current_aircraft != NULL){ ///while current_aircraft does NOT point to NULL i.e list is not empty
             printf("2nd while loop\n");
             sleep(1);
-            /*
+            
+            //check if this is the first loop ever
+            if(!first_time){
+                printf("before\n");
+                previous_altitude = current_aircraft->prev_alt; //was seg faulting here! when aircrafts linked list was empty.
+                printf("after\n");
+            }else{
+                previous_altitude = -1;
+            }
+
+            
             double current_altitude = current_aircraft->altitude;
             double current_latitude = current_aircraft->lat;
             double current_longitude = current_aircraft->lon;
             double distance = lat_lon_distance(current_latitude,current_longitude);
-        
-
+            
+            
             //PERFORM CHECK: Take-off or landing?
             if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 2)){
                 
@@ -739,24 +749,31 @@ void *aircraft_counter(void* arg){
                     printf("Error! this should not be happening!\n");
                 }
     
-            //PERFORM CHECK: Overflight?
             }else{
-                //should never happened
-                printf("it happened!!\n");    
+                
+                printf("not a takeoff/landing, maybe overflight\n");    
 
             }
             
-       
+             current_aircraft->prev_alt = current_altitude;
 
             // incrementing next node in the linked list
             current_aircraft = current_aircraft->next;
-            */
+            
         }
-        printf("yolo\n");
-        //current_aircraft = Modes.aircrafts; //reset to head of list
-        //sleep(5);
-        first_time =false;
         
+
+        for(int i=0; i<1000; i++){
+            printf("take-off: %d\n", Modes.num_takeoffs);
+            printf("landings: %d\n", Modes.num_landings);
+            printf("overflights: %d\n", Modes.num_overflights);
+        }
+        
+
+        current_aircraft = Modes.aircrafts; //reset to head of list
+        writeToFile();
+        first_time =false;
+        sleep(5);
     }
 
     
@@ -799,10 +816,7 @@ double lat_lon_distance(double lat, double lon)
 
 }
 
-void overflight_hlpr(void){
 
-    //overfilght occured write to file
-}
 
 //
 //=========================================================================

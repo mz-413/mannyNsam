@@ -206,9 +206,9 @@ struct aircraft {
     char          flight[16];     // Flight number
     unsigned char signalLevel[8]; // Last 8 Signal Amplitudes
     int           altitude;       // Altitude in feet
-
+    //defined by us
     char          status;         // in the air = a or on the ground =g
-    int           prev_altitude;  // previous altitude in past 5 seconds
+    int           prev_alt;       // previous altitude in past 5 seconds
     
     int           speed;          // Velocity
     int           track;          // Angle of flight
@@ -474,8 +474,8 @@ struct stDF     *interactiveFindDF      (uint32_t addr);
 //void aircraft_counter(void);
 void *aircraft_counter(void* arg);
 double lat_lon_distance(double lat, double lon);
-void overflight_hlpr(void); 
-
+//void overflight_hlpr(void); 
+void writeToFile(void);
 
 //in C/C++ void parameter means no parameters, somefunction() means no parameters in C++ and any number of 
 //parameters in C!

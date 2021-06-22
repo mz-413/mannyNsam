@@ -560,6 +560,20 @@ void interactiveShowData(void) {
 }
 //
 //=========================================================================
+
+
+void overflight_hlpr(void){
+
+    //overfilght occured write to file
+    Modes.num_overflights++;
+            for(int i=0; i<1000; i++){
+            printf("overflight_hlpr called!!\n");
+            sleep(5);
+        }
+}
+
+
+
 //
 // When in interactive mode If we don't receive new nessages within
 // MODES_INTERACTIVE_DELETE_TTL seconds we remove the aircraft from the list.
@@ -577,6 +591,9 @@ void interactiveRemoveStaleAircrafts(void) {
 
         while(a) {
             if ((now - a->seen) > Modes.interactive_delete_ttl) {  //if x amount of time passed is more than some y amnt of time then....
+                
+                overflight_hlpr(); //if we remove an aircraft then it must be an overflight??
+
                 // Remove the element from the linked list, with care
                 // if we are removing the first element
                 if (!prev) {
@@ -585,7 +602,6 @@ void interactiveRemoveStaleAircrafts(void) {
                     prev->next = a->next; free(a); a = prev->next;
                 }
 
-                //overflight_hlpr(); //if we remove an aircraft then it must be an overflight??
             } else {
                 prev = a; a = a->next;
             }
