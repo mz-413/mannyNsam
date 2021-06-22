@@ -250,8 +250,10 @@ struct stDF {
 // Program global state
 struct {                             // Internal state
     pthread_t       reader_thread;
+    pthread_t       counter_thread; //pthread_t for our counter?????
+                                    
 
-    pthread_mutex_t data_mutex;      // Mutex to synchronize buffer access
+    pthread_mutex_t data_mutex;      // Mutex to synchronize buffer access.... data frames??
     pthread_cond_t  data_cond;       // Conditional variable associated
     uint16_t       *pData          [MODES_ASYNC_BUF_NUMBER]; // Raw IQ sample buffers from RTL
     struct timeb    stSystemTimeRTL[MODES_ASYNC_BUF_NUMBER]; // System time when RTL passed us this block
@@ -469,7 +471,8 @@ struct stDF     *interactiveFindDF      (uint32_t addr);
 
 //Our function declarations
 /////////////////////////////////////////////////////////////////////////////////////////
-void aircraft_counter(void);
+//void aircraft_counter(void);
+void *aircraft_counter(void* arg);
 double lat_lon_distance(double lat, double lon);
 void overflight_hlpr(void); 
 

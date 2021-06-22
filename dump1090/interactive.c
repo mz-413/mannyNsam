@@ -555,7 +555,7 @@ void interactiveShowData(void) {
             }
         }
         a = a->next;
-        test_func();
+        //test_func();
     }
 }
 //

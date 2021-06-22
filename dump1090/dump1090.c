@@ -349,7 +349,7 @@ void readDataFromFile(void) {
 //
 void *readerThreadEntryPoint(void *arg) {
     MODES_NOTUSED(arg);
-
+    
     if (Modes.filename == NULL) {
         rtlsdr_read_async(Modes.dev, rtlsdrCallback, NULL,
                               MODES_ASYNC_BUF_NUMBER,
@@ -657,6 +657,142 @@ int verbose_device_search(char *s)
 	fprintf(stderr, "No matching devices found.\n");
 	return -1;
 }
+
+
+
+
+//
+//=========================================================================
+//Functions define by us are below
+
+
+/*Description: Count take-offs, landings, and overflights and then save to text file.
+ *Parameters: 
+ *Output: write to a text file name.........
+ *Returns: none
+ *note:  "ground" is consider 767ft +/- 100ft, overflights check occurs in t remove_staleaircrafts()
+ */
+void *aircraft_counter(void* arg){
+
+    /*
+    struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
+    bool first_time = true; //first loop?
+    int previous_altitude;
+    
+    loop through the aircraft linked list
+    while(1){
+        
+        //check if this is the first loop ever
+        if(!first_time){
+            previous_altitude = current_aircraft->prev_altitude;
+        }else{
+         previous_altitude = -1;
+        }
+      
+
+//        struct LinkedList_taking_off_aircraft{ int data;
+//                                    struct LinkedList_taking_off_aircraft *next; };
+//
+//        struct LinkedList_landing_aircraft{ int data;
+//                                            struct LinkedList_landing_aircraft *next; };
+//
+//        struct LinkedList_overflight_aircraft{ int data;
+//                                                 struct LinkedList_overflight_aircraft *next; };
+
+        // checking each aircraft in linked list
+        while(current_aircraft != NULL){
+            double current_altitude = current_aircraft->altitude;
+            double current_latitude = current_aircraft->lat;
+            double current_longitude = current_aircraft->lon;
+            double distance = lat_lon_distance(current_latitude,current_longitude);
+        
+
+            //PERFORM CHECK: Take-off or landing?
+            if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 2)){
+                
+                //taking off?
+                if((current_altitude > previous_altitude) && (previous_altitude != -1)){
+
+                    //count as a take-off!
+                    current_aircraft->status = 'a'; // it's in the air now
+                    Modes.num_takeoffs++;
+
+
+                //landing?
+                }else if((current_altitude < previous_altitude) && (previous_altitude != -1)){
+                
+                    //count as a landing
+                    current_aircraft->status = 'g';
+                    Modes.num_landings++;
+                    
+                
+                //neither
+                }else{
+                    printf("Error! this should not be happening!\n");
+                }
+    
+            //PERFORM CHECK: Overflight?
+            }else{
+                //should never happened
+                printf("it happened!!\n");    
+
+            }
+            
+       
+
+            // incrementing next node in the linked list
+            current_aircraft = current_aircraft->next;
+        }
+        
+        current_aircraft = Modes.aircrafts; //reset to head of list
+        sleep(5);
+        first_time =false;
+    }
+
+    */
+
+
+    while(1){
+        printf("im with smarty pants ->\n");
+        sleep(1);
+
+    }
+}
+
+/*Description: returns the distance from auburn airport
+ *Parameters: the latitude and longitude of the some location in question
+ *Output: none
+ *Returns: distance in km of some given location from auburn airport
+ *note: This code is contributed by Mahadev(geeksforgeeks.org)
+ */
+double lat_lon_distance(double lat, double lon)
+{
+    // distance between latitudes
+    // and longitudes
+    double dLat = (lat - AUBURN_AIRPORT_LAT) *
+                  M_PI / 180.0;
+    double dLon = (lon - AUBURN_AIRPORT_LON) *
+                  M_PI / 180.0;
+
+    // convert to radians
+    double auburn_airport_lat = (AUBURN_AIRPORT_LAT) * M_PI / 180.0;
+    lat = (lat) * M_PI / 180.0;
+
+    // apply formulae
+    double a = pow(sin(dLat / 2), 2) +
+               pow(sin(dLon / 2), 2) *
+               cos(auburn_airport_lat) * cos(lat);
+    double rad = 6371;
+    double c = 2 * asin(sqrt(a));
+    return rad * c;
+
+}
+
+void overflight_hlpr(void){
+
+    //overfilght occured write to file
+}
+
 //
 //=========================================================================
 //
@@ -830,11 +966,18 @@ int main(int argc, char **argv) {
 
     // Create the thread that will read the data from the device.
     pthread_create(&Modes.reader_thread, NULL, readerThreadEntryPoint, NULL);
-    pthread_mutex_lock(&Modes.data_mutex);
+    pthread_mutex_lock(&Modes.data_mutex); //acquire the lock 
 
 
-    //likely place to create the pthread for counter function.
-    //pthread_create();
+    /*likely place to create the pthread for counter function.
+    pthread_create(address of pthread_t object,pthread_t attributes, pointer to func you wish to run,
+     ,arguments for the function);
+     we are assuming (but arent sure) that we are using the correct lock!!
+    */
+    pthread_create(&Modes.counter_thread, NULL,aircraft_counter,NULL);
+    printf("after pthreadcreate\n");
+    sleep(5);
+    //pthread_exit() ???? already in the code, dont think we need this but maybe......
 
     while (Modes.exit == 0) {
 
@@ -902,128 +1045,5 @@ int main(int argc, char **argv) {
 #else
     return (0);
 #endif
-}
-//
-//=========================================================================
-//Functions define by us are below
-
-
-/*Description: Count take-offs, landings, and overflights and then save to text file.
- *Parameters: 
- *Output: write to a text file name.........
- *Returns: none
- *note:  "ground" is consider 767ft +/- 100ft
- */
-void aircraft_counter(void){
-
-    struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
-    bool first_time = true; //first loop?
-    int previous_altitude;
-    //loop through the aircraft linked list
-
-    while(1){
-        
-        if(!first_time){
-            previous_altitude = current_aircraft->prev_altitude;
-        }else{
-         previous_altitude = -1;
-        }
-      
-
-//        struct LinkedList_taking_off_aircraft{ int data;
-//                                    struct LinkedList_taking_off_aircraft *next; };
-//
-//        struct LinkedList_landing_aircraft{ int data;
-//                                            struct LinkedList_landing_aircraft *next; };
-//
-//        struct LinkedList_overflight_aircraft{ int data;
-//                                                 struct LinkedList_overflight_aircraft *next; };
-
-        // checking each aircraft in linked list
-        while(current_aircraft != NULL){
-            double current_altitude = current_aircraft->altitude;
-            double current_latitude = current_aircraft->lat;
-            double current_longitude = current_aircraft->lon;
-            double distance = lat_lon_distance(current_latitude,current_longitude);
-        
-
-            //PERFORM CHECK: Take-off or landing?
-            if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 2)){
-                
-                //taking off?
-                if(current_altitude > previous_altitude){
-
-                    //count as a take-off!
-                    current_aircraft->status = 'a'; // it's in the air now
-                    Modes.num_takeoffs++;
-
-
-                //landing?
-                }else if(current_altitude < previous_altitude){
-                
-                    //count as a landing
-                    current_aircraft->status = 'g';
-                    Modes.num_landings;
-                    
-                
-                //neither
-                }else{
-                    printf("Error! this should not be happening!\n");
-                }
-    
-            //PERFORM CHECK: Overflight?
-            }else{
-                //should never happened
-                printf("it happened!!\n");    
-
-            }
-            
-       
-
-            // incrementing next node in the linked list
-            current_aircraft = current_aircraft->next;
-        }
-        
-        current_aircraft = Modes.aircrafts; //reset to head of list
-        sleep(5);
-        first_time =false;
-    }
-
-
-
-}
-
-/*Description: returns the distance from auburn airport
- *Parameters: the latitude and longitude of the some location in question
- *Output: none
- *Returns: distance in km of some given location from auburn airport
- *note: This code is contributed by Mahadev(geeksforgeeks.org)
- */
-double lat_lon_distance(double lat, double lon)
-{
-    // distance between latitudes
-    // and longitudes
-    double dLat = (lat - AUBURN_AIRPORT_LAT) *
-                  M_PI / 180.0;
-    double dLon = (lon - AUBURN_AIRPORT_LON) *
-                  M_PI / 180.0;
-
-    // convert to radians
-    double auburn_airport_lat = (AUBURN_AIRPORT_LAT) * M_PI / 180.0;
-    lat = (lat) * M_PI / 180.0;
-
-    // apply formulae
-    double a = pow(sin(dLat / 2), 2) +
-               pow(sin(dLon / 2), 2) *
-               cos(auburn_airport_lat) * cos(lat);
-    double rad = 6371;
-    double c = 2 * asin(sqrt(a));
-    return rad * c;
-
-}
-
-void overflight_hlpr(void){
-
-    //overfilght occured write to file
 }
 
