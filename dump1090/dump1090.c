@@ -702,12 +702,12 @@ void *aircraft_counter(void* arg){
 
         // checking each aircraft in linked list
         while(current_aircraft != NULL){ ///while current_aircraft does NOT point to NULL i.e list is not empty
-            printf("Inner while-loop\n");
-            sleep(1);
+            //printf("#2 while-loop\n");
+            //sleep(1);
             
             //check if this is the first loop ever
             if(!first_time){
-                printf("First Inner while-loop\n");
+                //printf("First Inner while-loop\n");
                 previous_altitude = current_aircraft->prev_alt;
                 
             }else{
@@ -722,11 +722,15 @@ void *aircraft_counter(void* arg){
             
             
             //PERFORM CHECK: Take-off or landing?
-            if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 5)){
-                
+            if((current_altitude>=AUBURN_ALTITUDE - FLIGHT_ALTITUDE) && (current_altitude<=AUBURN_ALTITUDE + FLIGHT_ALTITUDE) 
+                && (distance <= 5)){
+                printf("TAKEOFF OR LANDING!!\n");
+                sleep(3);
+
                 //taking off?
                 if((current_altitude > previous_altitude+5) && (previous_altitude != -1) && (current_aircraft->status != 'a')){
-
+                    printf("TAKE-OFF!!\n");
+                    sleep(3);
                     //count as a take-off!
                     current_aircraft->status = 'a'; // it's in the air now, need 
                     Modes.num_takeoffs++;
@@ -734,7 +738,8 @@ void *aircraft_counter(void* arg){
 
                 //landing?
                 }else if((current_altitude < previous_altitude-5) && (previous_altitude != -1) && (current_aircraft->status != 'g')){
-                
+                    printf("LANDING!!\n");
+                    sleep(3);
                     //count as a landing
                     current_aircraft->status = 'g';
                     Modes.num_landings++;
@@ -742,20 +747,21 @@ void *aircraft_counter(void* arg){
                 
                 //neither
                 }else{
-                    printf("Error! this should not be happening!\n");
+                    //printf("Error! this should not be happening!\n"); //nvm its fine
+                    //sleep(3);
                 }
     
             }else{
-                printf("not a takeoff/landing, maybe overflight\n");    
+                //printf("not a takeoff/landing, maybe overflight\n");    
             }
             
             current_aircraft->prev_alt = current_altitude;  //store current alt for next loop thru the linked list
             current_aircraft = current_aircraft->next;      //incrementing next node in the linked list
         }
    
-        printf("take-off: %d\n", Modes.num_takeoffs);
-        printf("landings: %d\n", Modes.num_landings);
-        printf("overflights: %d\n", Modes.num_overflights);
+        //printf("take-off: %d\n", Modes.num_takeoffs);
+        //printf("landings: %d\n", Modes.num_landings);
+        //printf("overflights: %d\n", Modes.num_overflights);
         
         current_aircraft = Modes.aircrafts; //reset to head of list
         writeToFile();

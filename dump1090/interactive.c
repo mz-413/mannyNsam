@@ -422,7 +422,35 @@ void test_func(void){
 }
 //////////////////////////////////////////////////////////////////////////////////
 
+double lat_lon_distance2(double lat, double lon)
+{
+    // distance between latitudes
+    // and longitudes
+    double dLat = (lat - AUBURN_AIRPORT_LAT) *
+                  M_PI / 180.0;
+    double dLon = (lon - AUBURN_AIRPORT_LON) *
+                  M_PI / 180.0;
 
+    // convert to radians
+    double auburn_airport_lat = (AUBURN_AIRPORT_LAT) * M_PI / 180.0;
+    lat = (lat) * M_PI / 180.0;
+
+    // apply formulae
+    double a = pow(sin(dLat / 2), 2) +
+               pow(sin(dLon / 2), 2) *
+               cos(auburn_airport_lat) * cos(lat);
+    double rad = 6371;
+    double c = 2 * asin(sqrt(a));
+
+
+    if(lat == 0 && lon == 0){
+        return -1;
+    }else{
+        return rad * c;
+    }
+    
+
+}
 
 
 
@@ -469,7 +497,7 @@ void interactiveShowData(void) {
 
     if (Modes.interactive_rtl1090 == 0) {
         printf (
-"Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs   Ti%c\n", progress);
+"Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs  Ti%c   Distance\n", progress);
     } else {
         printf (
 "Hex    Flight   Alt      V/S GS  TT  SSR  G*456^ Msgs    Seen %c\n", progress);
@@ -547,9 +575,12 @@ void interactiveShowData(void) {
                         snprintf(strFl, 6, "%5d", altitude);
                     }
 
-                    printf("%06X  %-4s  %-4s  %-8s %5s  %3s  %3s  %7s %8s  %3d %5d   %2d\n",
+                    double dist = lat_lon_distance2(a->lat, a->lon);
+
+
+                    printf("%06X  %-4s  %-4s  %-8s %5s  %3s  %3s  %7s %8s  %3d %5d %2d    %.2f\n",
                     a->addr, strMode, strSquawk, a->flight, strFl, strGs, strTt,
-                    strLat, strLon, signalAverage, msgs, (int)(now - a->seen));
+                    strLat, strLon, signalAverage, msgs, (int)(now - a->seen), dist);
                 }
                 count++;
             }
@@ -573,12 +604,11 @@ void overflight_hlpr(struct aircraft *a){
     if((a->status != 'a') && (a->status != 'g')){
     //overfilght occured write to file
         Modes.num_overflights++;
-        printf("overflight_hlpr called!!\n");
-        sleep(2);
+        //printf("overflight_hlpr called!!\n");
+        // asleep(2);
 
     }
   
-
 }
 
 

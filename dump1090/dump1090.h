@@ -184,10 +184,14 @@
 #endif
 
 #define MODES_NOTUSED(V) ((void) V)
+
+//Our defined constants
+////////////////////////////////////////////////////////////////////////
 #define AUBURN_ALTITUDE       777 // Auburn Airport's altitude in feet
 #define AUBURN_AIRPORT_LAT    32.615357 // Auburn Airport's latitude
 #define AUBURN_AIRPORT_LON   -85.432752 // Auburn Airport's longitude
-
+#define FLIGHT_ALTITUDE         500 //num of feet above ground level that is considered landing/take-off    
+////////////////////////////////////////////////////////////////////////
 
 //======================== structure declarations =========================
 
