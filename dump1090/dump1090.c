@@ -671,7 +671,7 @@ int verbose_device_search(char *s)
  */
 void writeToFile(void){
 
-    ////write ever 5sconds
+    ////write every 5sconds
     FILE *fp;
     fp = fopen("current_count.txt", "w");
     fprintf(fp,"%s %d %s %d %s %d","CURRENT COUNT \nType\t\t\tAmount\n-------------------------------------\nTake-offs:\t\t",Modes.num_takeoffs,"\nLandings:\t\t", Modes.num_landings,
@@ -699,21 +699,17 @@ void *aircraft_counter(void* arg){
 
     //loop through the aircraft linked list
     while(1){
-                
-        printf("previous_altitude == %d\n", previous_altitude);
-        printf("current_aircraft == %d\n", (int)current_aircraft);
-        sleep(1);
 
         // checking each aircraft in linked list
         while(current_aircraft != NULL){ ///while current_aircraft does NOT point to NULL i.e list is not empty
-            printf("2nd while loop\n");
+            printf("Inner while-loop\n");
             sleep(1);
             
             //check if this is the first loop ever
             if(!first_time){
-                printf("before\n");
-                previous_altitude = current_aircraft->prev_alt; //was seg faulting here! when aircrafts linked list was empty.
-                printf("after\n");
+                printf("First Inner while-loop\n");
+                previous_altitude = current_aircraft->prev_alt;
+                
             }else{
                 previous_altitude = -1;
             }
@@ -726,18 +722,18 @@ void *aircraft_counter(void* arg){
             
             
             //PERFORM CHECK: Take-off or landing?
-            if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 2)){
+            if((current_altitude>=AUBURN_ALTITUDE - 100) && (current_altitude<=AUBURN_ALTITUDE + 100) && (distance <= 5)){
                 
                 //taking off?
-                if((current_altitude > previous_altitude) && (previous_altitude != -1)){
+                if((current_altitude > previous_altitude+5) && (previous_altitude != -1) && (current_aircraft->status != 'a')){
 
                     //count as a take-off!
-                    current_aircraft->status = 'a'; // it's in the air now
+                    current_aircraft->status = 'a'; // it's in the air now, need 
                     Modes.num_takeoffs++;
 
 
                 //landing?
-                }else if((current_altitude < previous_altitude) && (previous_altitude != -1)){
+                }else if((current_altitude < previous_altitude-5) && (previous_altitude != -1) && (current_aircraft->status != 'g')){
                 
                     //count as a landing
                     current_aircraft->status = 'g';
@@ -750,26 +746,17 @@ void *aircraft_counter(void* arg){
                 }
     
             }else{
-                
                 printf("not a takeoff/landing, maybe overflight\n");    
-
             }
             
-             current_aircraft->prev_alt = current_altitude;
-
-            // incrementing next node in the linked list
-            current_aircraft = current_aircraft->next;
-            
+            current_aircraft->prev_alt = current_altitude;  //store current alt for next loop thru the linked list
+            current_aircraft = current_aircraft->next;      //incrementing next node in the linked list
         }
+   
+        printf("take-off: %d\n", Modes.num_takeoffs);
+        printf("landings: %d\n", Modes.num_landings);
+        printf("overflights: %d\n", Modes.num_overflights);
         
-
-        for(int i=0; i<1000; i++){
-            printf("take-off: %d\n", Modes.num_takeoffs);
-            printf("landings: %d\n", Modes.num_landings);
-            printf("overflights: %d\n", Modes.num_overflights);
-        }
-        
-
         current_aircraft = Modes.aircrafts; //reset to head of list
         writeToFile();
         first_time =false;

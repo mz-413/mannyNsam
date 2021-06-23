@@ -561,15 +561,24 @@ void interactiveShowData(void) {
 //
 //=========================================================================
 
+    /*
+    Scenarios where overflight can be called by overflight did not occur
+    Take-off: plane takes off and flys out of range
+        solution: if plane's status is set to 'a' then it has been counted as take off DO NOT count as overflight
+    Landing: plane lands and then turns off i.e drops of the map
+        solution: if plane status is set to 'g' then it has been counted as a landing Do NOT count as overflight
+    */
+void overflight_hlpr(struct aircraft *a){
 
-void overflight_hlpr(void){
-
+    if((a->status != 'a') && (a->status != 'g')){
     //overfilght occured write to file
-    Modes.num_overflights++;
-            for(int i=0; i<1000; i++){
-            printf("overflight_hlpr called!!\n");
-            sleep(5);
-        }
+        Modes.num_overflights++;
+        printf("overflight_hlpr called!!\n");
+        sleep(2);
+
+    }
+  
+
 }
 
 
@@ -592,8 +601,8 @@ void interactiveRemoveStaleAircrafts(void) {
         while(a) {
             if ((now - a->seen) > Modes.interactive_delete_ttl) {  //if x amount of time passed is more than some y amnt of time then....
                 
-                overflight_hlpr(); //if we remove an aircraft then it must be an overflight??
-
+                overflight_hlpr(a); //if we remove an aircraft then it must be an overflight??
+                printf("$remove aircraft form linked list!\n");
                 // Remove the element from the linked list, with care
                 // if we are removing the first element
                 if (!prev) {
