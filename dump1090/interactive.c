@@ -414,13 +414,24 @@ struct aircraft *interactiveReceiveData(struct modesMessage *mm) {
 
 //Our functions
 //////////////////////////////////////////////////////////////////////////////
-void test_func(void){
-    
-    printf("Hello there\n");
-    //sleep(5);
+    /*
+    Scenarios where overflight can be called by overflight did not occur
+    Take-off: plane takes off and flys out of range
+        solution: if plane's status is set to 'a' then it has been counted as take off DO NOT count as overflight
+    Landing: plane lands and then turns off i.e drops of the map
+        solution: if plane status is set to 'g' then it has been counted as a landing Do NOT count as overflight
+    */
+void overflight_hlpr(struct aircraft *a){
 
+    if((a->status != 'a') && (a->status != 'g')){
+    //overfilght occured write to file
+        Modes.num_overflights++;
+        //printf("overflight_hlpr called!!\n");
+        // asleep(2);
+
+    }
+  
 }
-//////////////////////////////////////////////////////////////////////////////////
 
 double lat_lon_distance2(double lat, double lon)
 {
@@ -446,14 +457,14 @@ double lat_lon_distance2(double lat, double lon)
     if(lat == 0 && lon == 0){
         return -1;
     }else{
-        return rad * c;
+        return rad * c *(0.6213712); //convert to miles
     }
     
 
 }
 
 
-
+//////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -497,13 +508,13 @@ void interactiveShowData(void) {
 
     if (Modes.interactive_rtl1090 == 0) {
         printf (
-"Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs  Ti%c   Distance\n", progress);
+"Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs  Ti%c   Distance(mi)\n", progress);
     } else {
         printf (
 "Hex    Flight   Alt      V/S GS  TT  SSR  G*456^ Msgs    Seen %c\n", progress);
     }
     printf(
-"-------------------------------------------------------------------------------\n");
+"---------------------------------------------------------------------------------------------\n");
 
     while(a && (count < Modes.interactive_rows)) {
 
@@ -592,24 +603,7 @@ void interactiveShowData(void) {
 //
 //=========================================================================
 
-    /*
-    Scenarios where overflight can be called by overflight did not occur
-    Take-off: plane takes off and flys out of range
-        solution: if plane's status is set to 'a' then it has been counted as take off DO NOT count as overflight
-    Landing: plane lands and then turns off i.e drops of the map
-        solution: if plane status is set to 'g' then it has been counted as a landing Do NOT count as overflight
-    */
-void overflight_hlpr(struct aircraft *a){
 
-    if((a->status != 'a') && (a->status != 'g')){
-    //overfilght occured write to file
-        Modes.num_overflights++;
-        //printf("overflight_hlpr called!!\n");
-        // asleep(2);
-
-    }
-  
-}
 
 
 
@@ -620,7 +614,7 @@ void overflight_hlpr(struct aircraft *a){
 void interactiveRemoveStaleAircrafts(void) {
     struct aircraft *a = Modes.aircrafts;   //pointer to the head of the aircrafts linked list
     struct aircraft *prev = NULL;           //null ptr to an aircraft
-    time_t now = time(NULL);                //basically get current i.e now = curent time
+    time_t now = time(NULL);                //basically get current time i.e now = curent time
 
     // Only do cleanup once per second
     if (Modes.last_cleanup_time != now) {
@@ -631,8 +625,9 @@ void interactiveRemoveStaleAircrafts(void) {
         while(a) {
             if ((now - a->seen) > Modes.interactive_delete_ttl) {  //if x amount of time passed is more than some y amnt of time then....
                 
-                overflight_hlpr(a); //if we remove an aircraft then it must be an overflight??
+                overflight_hlpr(a); //if we remove an aircraft then it must be an overflight
                 printf("$remove aircraft form linked list!\n");
+
                 // Remove the element from the linked list, with care
                 // if we are removing the first element
                 if (!prev) {

@@ -721,16 +721,13 @@ void *aircraft_counter(void* arg){
             double distance = lat_lon_distance(current_latitude,current_longitude);
             
             
-            //PERFORM CHECK: Take-off or landing?
+            //PERFORM CHECK: Take-off or landing i.e. flying very low
             if((current_altitude>=AUBURN_ALTITUDE - FLIGHT_ALTITUDE) && (current_altitude<=AUBURN_ALTITUDE + FLIGHT_ALTITUDE) 
                 && (distance <= 5)){
-                printf("TAKEOFF OR LANDING!!\n");
-                sleep(3);
 
                 //taking off?
                 if((current_altitude > previous_altitude+5) && (previous_altitude != -1) && (current_aircraft->status != 'a')){
-                    printf("TAKE-OFF!!\n");
-                    sleep(3);
+
                     //count as a take-off!
                     current_aircraft->status = 'a'; // it's in the air now, need 
                     Modes.num_takeoffs++;
@@ -738,8 +735,7 @@ void *aircraft_counter(void* arg){
 
                 //landing?
                 }else if((current_altitude < previous_altitude-5) && (previous_altitude != -1) && (current_aircraft->status != 'g')){
-                    printf("LANDING!!\n");
-                    sleep(3);
+
                     //count as a landing
                     current_aircraft->status = 'g';
                     Modes.num_landings++;
@@ -747,8 +743,7 @@ void *aircraft_counter(void* arg){
                 
                 //neither
                 }else{
-                    //printf("Error! this should not be happening!\n"); //nvm its fine
-                    //sleep(3);
+                    
                 }
     
             }else{
@@ -758,11 +753,7 @@ void *aircraft_counter(void* arg){
             current_aircraft->prev_alt = current_altitude;  //store current alt for next loop thru the linked list
             current_aircraft = current_aircraft->next;      //incrementing next node in the linked list
         }
-   
-        //printf("take-off: %d\n", Modes.num_takeoffs);
-        //printf("landings: %d\n", Modes.num_landings);
-        //printf("overflights: %d\n", Modes.num_overflights);
-        
+           
         current_aircraft = Modes.aircrafts; //reset to head of list
         writeToFile();
         first_time =false;
@@ -770,14 +761,6 @@ void *aircraft_counter(void* arg){
     }
 
     
-
-   /*
-    while(1){
-        printf("im with smarty pants ->\n");
-        sleep(1);
-
-    }
-    */
 }
 
 /*Description: returns the distance from auburn airport
