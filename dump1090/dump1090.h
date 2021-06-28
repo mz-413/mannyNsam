@@ -164,7 +164,7 @@
 #define MODES_INTERACTIVE_REFRESH_TIME 250      // Milliseconds
 #define MODES_INTERACTIVE_ROWS          22      // Rows on screen
 #define MODES_INTERACTIVE_DELETE_TTL   300      // Delete from the list after 300 seconds
-#define MODES_INTERACTIVE_DISPLAY_TTL   60      // Delete from display after 60 seconds
+#define MODES_INTERACTIVE_DISPLAY_TTL  300      // Delete from display after 60 seconds
 
 #define MODES_NET_HEARTBEAT_RATE       900      // Each block is approx 65mS - default is > 1 min
 
@@ -210,6 +210,7 @@ struct aircraft {
     char          flight[16];     // Flight number
     unsigned char signalLevel[8]; // Last 8 Signal Amplitudes
     int           altitude;       // Altitude in feet
+
     //defined by us
     char          status;         // in the air = a or on the ground =g
     int           prev_alt;       // previous altitude in past 5 seconds
@@ -360,9 +361,24 @@ struct {                             // Internal state
     unsigned int stat_badcrc;
     unsigned int stat_fixed;
 
+    //defined by use
     unsigned int num_takeoffs;
     unsigned int num_landings;
     unsigned int num_overflights;
+    // unsigned int num_takeoffs_daily;
+    // unsigned int num_landings_daily;
+    // unsigned int num_overflights_daily;
+    // unsigned int num_takeoffs_weekly;
+    // unsigned int num_landings_weekly;
+    // unsigned int num_overflights_weekly;
+    unsigned int num_takeoffs_monthly;
+    unsigned int num_landings_monthly;
+    unsigned int num_overflights_monthly;
+
+    time_t start_time;  //the time this program started
+    time_t cur_month;  //current month we are counting for i.e take-offs in the month of june 
+
+
 
     // Histogram of fixed bit errors: index 0 for single bit erros,
     // index 1 for double bit errors etc.
@@ -480,6 +496,7 @@ void *aircraft_counter(void* arg);
 double lat_lon_distance(double lat, double lon);
 //void overflight_hlpr(void); 
 void writeToFile(void);
+struct tm convert_to_tm(time_t time);
 
 //in C/C++ void parameter means no parameters, somefunction() means no parameters in C++ and any number of 
 //parameters in C!

@@ -185,6 +185,12 @@ void modesInit(void) {
         }
     }
 
+    time_t now;
+    time(&now);
+    Modes.start_time = now; //get the start time of this application 
+    Modes.cur_month = now;
+
+
     // Prepare error correction tables
     modesInitErrorInfo();
 }
@@ -669,31 +675,75 @@ int verbose_device_search(char *s)
  *Returns: none
  *note: used only in aircraftcounter function
  */
+/*
 void writeToFile(void){
 
     ////write every 5sconds
     FILE *fp;
     fp = fopen("current_count.txt", "w");
-    fprintf(fp,"%s %d %s %d %s %d","CURRENT COUNT \nType\t\t\tAmount\n-------------------------------------\nTake-offs:\t\t",Modes.num_takeoffs,"\nLandings:\t\t", Modes.num_landings,
-    "\nOverflights:\t",Modes.num_overflights);
+    time_t now;
+    time(&now);
+
+    fprintf(fp,"%s %s %s %d %s %d %s %d","CURRENT COUNT as of",ctime(&now)
+    ,"\nType\t\t\tAmount\n------------------------------------------\nTake-offs:\t\t"
+    ,Modes.num_takeoffs,"\nLandings:\t\t", Modes.num_landings,"\nOverflights:\t",Modes.num_overflights);
+    
     fclose(fp);
 
+
     //write weekly
+
 
     //write monthly 
 
 }
+*/
 
-/*Description: Count take-offs, landings and then save to text file.
+void writeToFile(void){
+
+    ////write every 5sconds
+    FILE *fp;
+    fp = fopen("AA_Report.txt", "w");
+
+    time_t now;
+    time(&now);                                                     //current time
+    int counting_month = convert_to_tm(Modes.cur_month).tm_mon +1;  //month we are counting for
+
+    fprintf(fp,"%s %d %s %d %s %d %s %d %s%s %s %d %s %d %s %d","=========AIRCRAFT ACTIVITY REPORT=====\n\n-------------------------------------\nTHIS MONTH (",
+    counting_month, ")\n-------------------------------------\nTake-offs:\t\t", Modes.num_takeoffs_monthly,"\nLandings:\t\t", Modes.num_landings_monthly,
+    "\nOverflights:\t", Modes.num_overflights_monthly,"\n-------------------------------------\n\n\nSINCE:", ctime(&Modes.start_time),
+    "-------------------------------------\nTake-offs:\t\t", Modes.num_takeoffs_monthly,"\nLandings:\t\t", Modes.num_landings_monthly,"\nOverflights:\t",
+    Modes.num_overflights_monthly);
+
+    fclose(fp);
+
+
+}
+
+/*Description: convert a time_t data type to tm data type
+ *Parameters: time_t object
+ *Output: none
+ *Returns: tm object 
+ */
+struct tm convert_to_tm(time_t time){
+
+    struct tm result;
+    result = *localtime(&time);
+    return result;
+}
+
+
+
+/*Description: Count take-offs, landings and increment Modes object's attributes
  *Parameters: 
- *Output: write to a text file name.........
+ *Output: none
  *Returns: none
- *note:  "ground" is consider 767ft +/- 100ft, overflights check occurs in t remove_staleaircrafts()
+ *note:  "ground" is consider 767ft, overflights check occurs in interactive.c remove_staleaircrafts() function
  */
 void *aircraft_counter(void* arg){
 
     
-    struct aircraft *current_aircraft = Modes.aircrafts; //set to begining of linked list
+    struct aircraft *current_aircraft = Modes.aircrafts; //ptr to begining of linked list
     bool first_time = true; //first loop?
     int previous_altitude=0;
 
@@ -718,19 +768,32 @@ void *aircraft_counter(void* arg){
             double current_altitude = current_aircraft->altitude;
             double current_latitude = current_aircraft->lat;
             double current_longitude = current_aircraft->lon;
-            double distance = lat_lon_distance(current_latitude,current_longitude);
+            double distance = lat_lon_distance(current_latitude,current_longitude); //of aircraft to AUO
             
             
             //PERFORM CHECK: Take-off or landing i.e. flying very low
             if((current_altitude>=AUBURN_ALTITUDE - FLIGHT_ALTITUDE) && (current_altitude<=AUBURN_ALTITUDE + FLIGHT_ALTITUDE) 
                 && (distance <= 5)){
 
+                time_t now;
+                time(&now);                                         //get the current time
+                int actual_month = convert_to_tm(now).tm_mon;       //the current month we are in
+                int counting_month = convert_to_tm(Modes.cur_month).tm_mon;     //the month we are currently counting for
+
                 //taking off?
                 if((current_altitude > previous_altitude+5) && (previous_altitude != -1) && (current_aircraft->status != 'a')){
 
                     //count as a take-off!
-                    current_aircraft->status = 'a'; // it's in the air now, need 
+                    current_aircraft->status = 'a'; // it's in the air now
                     Modes.num_takeoffs++;
+
+                    if(actual_month == counting_month){
+                        Modes.num_takeoffs_monthly++;
+                    }else{
+                        Modes.cur_month = now;
+                        Modes.num_takeoffs_monthly = 1;
+                    }
+
 
 
                 //landing?
@@ -740,13 +803,19 @@ void *aircraft_counter(void* arg){
                     current_aircraft->status = 'g';
                     Modes.num_landings++;
                     
-                
+                    if(actual_month == counting_month){
+                        Modes.num_landings_monthly++;
+                    }else{
+                        Modes.cur_month = now;
+                        Modes.num_landings_monthly = 1;
+                    }                
                 //neither
                 }else{
-                    
+                    //occurs when after 5 seconds a plane is still in the process of landing or taking off, Or if a plane is flying very low over airport(unlikely)
                 }
     
             }else{
+                //occurs when no takeoff/landing has occured; a plane is flying a the same altitude as it was 5 seconds ago
                 //printf("not a takeoff/landing, maybe overflight\n");    
             }
             
@@ -972,12 +1041,11 @@ int main(int argc, char **argv) {
 
     /*likely place to create the pthread for counter function.
     pthread_create(address of pthread_t object,pthread_t attributes, pointer to func you wish to run,
-     ,arguments for the function);
-     we are assuming (but arent sure) that we are using the correct lock!!
+     ,arguments for the function)
     */
     pthread_create(&Modes.counter_thread, NULL,aircraft_counter,NULL);
     printf("after pthreadcreate\n");
-    sleep(5);
+    //sleep(5);
     //pthread_exit() ???? already in the code, dont think we need this but maybe......
 
     while (Modes.exit == 0) {

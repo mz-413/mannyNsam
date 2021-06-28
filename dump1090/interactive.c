@@ -421,48 +421,78 @@ struct aircraft *interactiveReceiveData(struct modesMessage *mm) {
     Landing: plane lands and then turns off i.e drops of the map
         solution: if plane status is set to 'g' then it has been counted as a landing Do NOT count as overflight
     */
+
+/*Description: convert a time_t data type to tm data type
+ *Parameters: time_t object
+ *Output: none
+ *Returns: tm object 
+ */
+struct tm convert_to_tm2(time_t time){
+
+    struct tm result;
+    result = *localtime(&time);
+    return result;
+}
+
+
 void overflight_hlpr(struct aircraft *a){
 
-    if((a->status != 'a') && (a->status != 'g')){
-    //overfilght occured write to file
+    time_t now;
+    time(&now);
+    int actual_month = convert_to_tm2(now).tm_mon;                     //the current month we are in
+    int counting_month = convert_to_tm2(Modes.cur_month).tm_mon;     //the month we are currently counting for    
+
+    //the case when a plane take off and flys off the map
+    if((a->status != 'a') && (a->status != 'g')){ 
+    //overfilght occured 
         Modes.num_overflights++;
-        //printf("overflight_hlpr called!!\n");
-        // asleep(2);
+
+        if(actual_month == counting_month){
+            Modes.num_overflights_monthly++;
+        }else{
+            Modes.cur_month = now;
+            Modes.num_overflights_monthly = 1;
+        }
+
 
     }
   
 }
-
+/* not using this anymore because we need to return a char array and that not possible in c
 double lat_lon_distance2(double lat, double lon)
 {
     // distance between latitudes
     // and longitudes
-    double dLat = (lat - AUBURN_AIRPORT_LAT) *
-                  M_PI / 180.0;
-    double dLon = (lon - AUBURN_AIRPORT_LON) *
-                  M_PI / 180.0;
+    double dLat = (lat - AUBURN_AIRPORT_LAT) * M_PI / 180.0;
+    double dLon = (lon - AUBURN_AIRPORT_LON) * M_PI / 180.0;
+    char result[5];
 
     // convert to radians
     double auburn_airport_lat = (AUBURN_AIRPORT_LAT) * M_PI / 180.0;
     lat = (lat) * M_PI / 180.0;
-
+   
     // apply formulae
     double a = pow(sin(dLat / 2), 2) +
                pow(sin(dLon / 2), 2) *
                cos(auburn_airport_lat) * cos(lat);
     double rad = 6371;
     double c = 2 * asin(sqrt(a));
+    double temp = rad * c *(0.6213712); //answer in miles
+
+    sprintf(result,"%.2lf",temp);        //convert to string
+
+
 
 
     if(lat == 0 && lon == 0){
         return -1;
     }else{
-        return rad * c *(0.6213712); //convert to miles
+        return temp; //convert to miles
     }
     
 
 }
-
+*/
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -508,7 +538,7 @@ void interactiveShowData(void) {
 
     if (Modes.interactive_rtl1090 == 0) {
         printf (
-"Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs  Ti%c   Distance(mi)\n", progress);
+"Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs   Ti%c  Distance(mi)\n", progress);
     } else {
         printf (
 "Hex    Flight   Alt      V/S GS  TT  SSR  G*456^ Msgs    Seen %c\n", progress);
@@ -586,18 +616,48 @@ void interactiveShowData(void) {
                         snprintf(strFl, 6, "%5d", altitude);
                     }
 
-                    double dist = lat_lon_distance2(a->lat, a->lon);
+//double distance = lat_lon_distance2(a->lat, a->lon);
+//Find how far the aircraft is from the airport in miles, and put it in char[5] data structure
+/////////////////////////////////////////////////////////////////////////////////////////
+
+    // distance between latitudes
+    // and longitudes
+    double dLat = (a->lat - AUBURN_AIRPORT_LAT) * M_PI / 180.0;
+    double dLon = (a->lon - AUBURN_AIRPORT_LON) * M_PI / 180.0;
+    char result[7]; //must be size 7 or else for some reason when we output it on the screen we have a random 68 when no lat/lon is given
+
+    // convert to radians
+    double auburn_airport_lat = (AUBURN_AIRPORT_LAT) * M_PI / 180.0;
+    double tlat = (a->lat) * M_PI / 180.0;
+
+    // apply formulae
+    double A = pow(sin(dLat / 2), 2) +
+               pow(sin(dLon / 2), 2) *
+               cos(auburn_airport_lat) * cos(tlat);
+    double rad = 6371;
+    double c = 2 * asin(sqrt(A));
+    double temp = rad * c *(0.6213712); //answer in miles
+
+    sprintf(result,"%.2lf",temp);        //convert to string
+
+    //if no lat/lon given set result to spaces
+    if(a->lat == 0 && a->lon == 0){
+        for(int i=0; i<7; i++)
+            result[i] = ' ';
+    }
+    
+////////////////////////////////////////////////////////////////////////////////////////
+//result is our distance from the airport for aircraft 'a'
 
 
-                    printf("%06X  %-4s  %-4s  %-8s %5s  %3s  %3s  %7s %8s  %3d %5d %2d    %.2f\n",
+                    printf("%06X  %-4s  %-4s  %-8s %5s  %3s  %3s  %7s %8s  %3d %5d   %2d      %s\n",
                     a->addr, strMode, strSquawk, a->flight, strFl, strGs, strTt,
-                    strLat, strLon, signalAverage, msgs, (int)(now - a->seen), dist);
+                    strLat, strLon, signalAverage, msgs, (int)(now - a->seen), result);
                 }
                 count++;
             }
         }
         a = a->next;
-        //test_func();
     }
 }
 //
@@ -623,10 +683,9 @@ void interactiveRemoveStaleAircrafts(void) {
         interactiveRemoveStaleDF(now);
 
         while(a) {
-            if ((now - a->seen) > Modes.interactive_delete_ttl) {  //if x amount of time passed is more than some y amnt of time then....
+            if ((now - a->seen) > Modes.interactive_delete_ttl) {  //check if the last broadcast was recieve longer than 5 min ago
                 
                 overflight_hlpr(a); //if we remove an aircraft then it must be an overflight
-                printf("$remove aircraft form linked list!\n");
 
                 // Remove the element from the linked list, with care
                 // if we are removing the first element
