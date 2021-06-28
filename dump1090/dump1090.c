@@ -703,7 +703,7 @@ void writeToFile(void){
 
     ////write every 5sconds
     FILE *fp;
-    fp = fopen("AA_Report.txt", "w");
+    fp = fopen("/home/pi/Desktop/AA_Report.txt", "w");
 
     time_t now;
     time(&now);                                                     //current time
@@ -711,8 +711,8 @@ void writeToFile(void){
 
     fprintf(fp,"%s %d %s %d %s %d %s %d %s%s %s %d %s %d %s %d","=========AIRCRAFT ACTIVITY REPORT=====\n\n-------------------------------------\nTHIS MONTH (",
     counting_month, ")\n-------------------------------------\nTake-offs:\t\t", Modes.num_takeoffs_monthly,"\nLandings:\t\t", Modes.num_landings_monthly,
-    "\nOverflights:\t", Modes.num_overflights_monthly,"\n-------------------------------------\n\n\nSINCE:", ctime(&Modes.start_time),
-    "-------------------------------------\nTake-offs:\t\t", Modes.num_takeoffs_monthly,"\nLandings:\t\t", Modes.num_landings_monthly,"\nOverflights:\t",
+    "\nOverflights:\t\t", Modes.num_overflights_monthly,"\n-------------------------------------\n\n\nSINCE: ", ctime(&Modes.start_time),
+    "-------------------------------------\nTake-offs:\t\t", Modes.num_takeoffs_monthly,"\nLandings:\t\t", Modes.num_landings_monthly,"\nOverflights:\t\t",
     Modes.num_overflights_monthly);
 
     fclose(fp);
@@ -773,7 +773,7 @@ void *aircraft_counter(void* arg){
             
             //PERFORM CHECK: Take-off or landing i.e. flying very low
             if((current_altitude>=AUBURN_ALTITUDE - FLIGHT_ALTITUDE) && (current_altitude<=AUBURN_ALTITUDE + FLIGHT_ALTITUDE) 
-                && (distance <= 5)){
+               /* && (distance <= 5)*/){
 
                 time_t now;
                 time(&now);                                         //get the current time
