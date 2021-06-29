@@ -406,7 +406,7 @@ struct {                             // Internal state
 
     unsigned int stat_blocks_processed;
     unsigned int stat_blocks_dropped;
-} Modes;
+} Modes; //logic for the whole program 
 // declares Modes as a variable with this struct
 // definition, but the definition cannot be re-used. 
 //https://stackoverflow.com/questions/17720223/c-typedef-struct-name-vs-typedef-struct-name

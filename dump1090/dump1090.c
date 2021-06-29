@@ -861,14 +861,28 @@ double lat_lon_distance(double lat, double lon)
 
 }
 
+void warning_func(void){
+    char choice;
+    printf("WARNING!!  DID YOU SAVE THE DATA FROM THE AA_REPORT.TXT FILE? THE PROGRAM WILL OVERWRITE THE CONTENT OF THE FILE!!\n");
+    printf("Please enter 'y' for Yes and 'n' for No. \n");
+    scanf("%c", &choice);
+        if(choice == 'y'){
+        printf("Proceed\n");
 
+        }
+        else{
+            printf("Well! you've been warned\n");
+        }
+
+
+}
 
 //
 //=========================================================================
 //
 int main(int argc, char **argv) {
     int j;
-
+    warning_func();
     // Set sane defaults
     modesInitConfig();
     signal(SIGINT, sigintHandler); // Define Ctrl/C handler (exit program)
@@ -1044,7 +1058,7 @@ int main(int argc, char **argv) {
      ,arguments for the function)
     */
     pthread_create(&Modes.counter_thread, NULL,aircraft_counter,NULL);
-    printf("after pthreadcreate\n");
+    printf("Starting program :)\n");
     //sleep(5);
     //pthread_exit() ???? already in the code, dont think we need this but maybe......
 

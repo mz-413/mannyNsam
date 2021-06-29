@@ -1,0 +1,27 @@
+Overview:
+* Modified aircraft data structure so that our aircraft counting function (aircraft_counter) can accurately track aircraft activity.
+* Created function aircraft_counter() that keeps track of plane takeoffs/landings 
+* Created p thread that runs aircraft_counter function so that it goes thru the aircraft linked-list and check changes; increments number of takeoffs/landings
+* Created function to find distance of each plane from AUO
+* Modified interactiveRemoveStaleAircrafts() function to count overflights
+
+
+aircraft_counter():
+* Every 5 seconds look at each aircraft in the aircraft linked-list to check if a take-off or landing has occured.
+	Takeoffs: 
+		-plane is +/- 500ft from ground level (767 ft) 
+		-in the past 5 seconds plane's altitude has increased by at least 5ft 
+		note: once counted it will not be counted as an overflight till the plane drops off the map and then goes back on the map
+		note: altitude increases/decreases by 25ft increments
+	Landings:
+		-plane is +/- 500ft from ground level (767 ft) 
+		-in the past 5 seconds plane's altitude has decreased by at least 5ft
+* Once going thru the whole aircraft linked list write the current number of takeoffs/landings to a txt file, wait 5 seconds and loop thru again
+
+Overflights:
+* An overflight is defined as a plane flying thru the the range of the ads-b receiver; not landing or taking off just passing thru
+	Overflights:
+	-Plane flys in range of the receiver and is added to the aircraft linked list
+	-An ADSB broadcast has not been detected in over 5 minutes
+	-Plane is removed from the linked list
+	note: planes that takeoffs/land and then drop off map are not considered overflights
